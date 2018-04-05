@@ -37,7 +37,7 @@ void arg_error(char* fault_cmd, char* prg);
 void help(char* prg);
 
 // Recursively Check every directory
-void recursive(char* filepath, int *d, int *f, int bit);
+void recursive(char* filepath, int *d, int *f, int *l, int *o, int bit);
 
 // Printing the directories/files
 void print(int bit, const char *fp, char *fn);
@@ -84,12 +84,14 @@ int main(int argc, char* argv[]) {
 
     // Checking if user asked to recursively check ever directory
     if(bit & RECURSIVE) {
-        int directories = 0, files = 0;
+        int directories = 0, files = 0, links = 0, other = 0;
         print_all(filepath, bit);
-        recursive(filepath, &directories, &files, bit);
+        recursive(filepath, &directories, &files, &links, &other, bit);
         printf("\n\nDIRECTORIES: %d\n", directories);
         printf("FILES: %7d\n", files);
-        printf("TOTAL: %7d\n\n", directories + files);
+        printf("LINKS: %7d\n", links);
+        printf("OTHER: %7d\n", other);
+        printf("TOTAL: %7d\n\n", directories + files + links + other);
     } else {
         print_all(filepath, bit);
         printf("\n");
@@ -138,7 +140,7 @@ void help(char* prg) {
 }
 
 // Recursively Check every directory
-void recursive(char* filepath, int *d, int *f, int bit) {
+void recursive(char* filepath, int *d, int *f, int *l, int *o, int bit) {
     DIR *dir;
     struct dirent *nl, **dl;
     int hidden = 0, n, total;
@@ -174,10 +176,14 @@ void recursive(char* filepath, int *d, int *f, int bit) {
                     // Print what is in current directory
                     printf("\n\n%s/%s:\n", filepath, nl->d_name);
                     print_all(fp, bit);
-                    recursive(fp, d, f, bit);
+                    recursive(fp, d, f, l, o, bit);
                 }
             }
-        } else { (*f)++; }
+        } else { 
+            if(nl->d_type == DT_REG) { (*f)++; }
+            else if(nl->d_type == DT_LNK) { (*l)++; }
+            else { (*o)++; }
+        }
     }
 }
 
