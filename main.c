@@ -10,7 +10,6 @@
 #include<grp.h>
 #include<pwd.h>
 #include<time.h>
-#include<math.h>
 #include<stdio.h>
 #include<getopt.h>
 #include<unistd.h>
@@ -66,7 +65,10 @@ int main(int argc, char* argv[]) {
         if(temp[0] == '-') {
             if((bit |= arg_check(argc, argv)) == -1) { arg_error(temp, argv[0]); } }
         // Check if the user passed a filepath
-        else if(!stat(argv[i], &namestatus)) { filepath = argv[i]; }
+        else if(!stat(argv[i], &namestatus)) {
+            if(strcmp(argv[i], ".")==0 || strcmp(argv[i], "..")==0) { printf("\nIgnoring directory [ %s ]\n"); }
+            else { filepath = argv[i]; }
+        }
         // Oh shit boi! User passed an incorrect argument
         else { arg_error(argv[i], argv[0]); }
     }
@@ -88,10 +90,10 @@ int main(int argc, char* argv[]) {
         print_all(filepath, bit);
         recursive(filepath, &directories, &files, &links, &other, bit);
         printf("\n\nDIRECTORIES: %d\n", directories);
-        printf("FILES: %7d\n", files);
-        printf("LINKS: %7d\n", links);
-        printf("OTHER: %7d\n", other);
-        printf("TOTAL: %7d\n\n", directories + files + links + other);
+        printf("FILES: %8d\n", files);
+        printf("LINKS: %8d\n", links);
+        printf("OTHER: %8d\n", other);
+        printf("TOTAL: %8d\n\n", directories + files + links + other);
     } else {
         print_all(filepath, bit);
         printf("\n");
